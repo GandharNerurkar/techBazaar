@@ -30,7 +30,7 @@
     "react-responsive-carousel": "^3.2.23",
     "react-select": "^5.8.0",
     "uuid": "^9.0.1",
-    "prisma": "^5.9.1"
+    "prisma": "^5.10.2"
   },
   "devDependencies": {
     "@types/cookie": "^0.6.0",
