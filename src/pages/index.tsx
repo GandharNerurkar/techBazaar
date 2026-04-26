@@ -46,51 +46,53 @@ export default function Home({categories, products, bestSeller, faeturedProducts
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const prisma = new PrismaClient()
+  try {
+    const categories = await prisma.category.findMany()
+    const products = await prisma.product.findMany({
+      include: {
+        category: true
+      }
+    })
 
-  const categories = await prisma.category.findMany()
-  const products = await prisma.product.findMany({
-    include: {
-      category: true
-    }
-  })
+    const faeturedProducts = await prisma.product.findMany({
+      where: {
+        featured: true
+      },
+      include: {
+        category: true
+      }
+    })
 
-  const faeturedProducts = await prisma.product.findMany({
-    where: {
-      featured: true
-    },
-    include: {
-      category: true
-    }
-  })
+    const bestSeller = await prisma.product.findMany({
+      where: {
+        bestSeller: true
+      },
+      include: {
+        category: true
+      }
+    })
 
-  const bestSeller = await prisma.product.findMany({
-    where: {
-      bestSeller: true
-    },
-    include: {
-      category: true
-    }
-  })
+    const offered = await prisma.product.findMany({
+      where: {
+        offered: true
+      },
+      include: {
+        category: true
+      }
+    })
 
-  const offered = await prisma.product.findMany({
-    where: {
-      offered: true
-    },
-    include: {
-      category: true
-    }
-  })
-
-  return {
-    props: {
-      categories : JSON.parse(JSON.stringify(categories)),
-      products : JSON.parse(JSON.stringify(products)),
-      faeturedProducts : JSON.parse(JSON.stringify(faeturedProducts)),
-      bestSeller : JSON.parse(JSON.stringify(bestSeller)),
-      offered : JSON.parse(JSON.stringify(offered))
-    },
-    revalidate: 30
-  };
+    return {
+      props: {
+        categories : JSON.parse(JSON.stringify(categories)),
+        products : JSON.parse(JSON.stringify(products)),
+        faeturedProducts : JSON.parse(JSON.stringify(faeturedProducts)),
+        bestSeller : JSON.parse(JSON.stringify(bestSeller)),
+        offered : JSON.parse(JSON.stringify(offered))
+      }
+    };
+  } finally {
+    await prisma.$disconnect()
+  }
 }

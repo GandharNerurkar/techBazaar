@@ -143,54 +143,39 @@ const ProductCard = ({product, reviewsData} : {product : product, reviewsData : 
 
 export default ProductCard
 
-export async function getStaticProps({params} : any) {
+export async function getServerSideProps({params} : any) {
     const product = params.product;
 
     const prisma = new PrismaClient();
-    const productData = await prisma.product.findUnique({
-        where: {
-            name: product
+    try {
+        const productData = await prisma.product.findUnique({
+            where: {
+                name: product
+            }
+        });
+
+        if (!productData) {
+            return {
+                notFound: true
+            };
         }
-    });
 
-    const reviews = await prisma.review.findMany({
-        where: {
-            productId: productData?.id
-        },
-        include: {
-            user: true
-        }
-    });
+        const reviews = await prisma.review.findMany({
+            where: {
+                productId: productData?.id
+            },
+            include: {
+                user: true
+            }
+        });
 
-    await prisma.$disconnect();
-
-    return {
-        props: {
-            product : JSON.parse(JSON.stringify(productData)),
-            reviewsData : JSON.parse(JSON.stringify(reviews))
-        },
-        revalidate: 30
-    }
-}
-
-export async function getStaticPaths() {
-    const prisma = new PrismaClient();
-    const products = await prisma.product.findMany();
-    const categories = await prisma.category.findMany();
-
-    const paths = products.map((product : any) => {
         return {
-            params: {
-                category: categories.find((category : any) => category.id === product.categoryId)?.name,
-                product: product.name
+            props: {
+                product : JSON.parse(JSON.stringify(productData)),
+                reviewsData : JSON.parse(JSON.stringify(reviews))
             }
         }
-    });
-
-    await prisma.$disconnect();
-
-    return {
-        paths,
-        fallback: 'blocking'
+    } finally {
+        await prisma.$disconnect();
     }
 }

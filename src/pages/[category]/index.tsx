@@ -57,43 +57,35 @@ const Index = ({products} : {products : any}) => {
 
 export default Index
 
-export async function getStaticProps({params} : any) {
+export async function getServerSideProps({params} : any) {
     const category = params.category;
     const prisma = new PrismaClient()
 
-    const categoryData = await prisma.category.findUnique({
-        where : {
-            name : category
+    try {
+        const categoryData = await prisma.category.findUnique({
+            where : {
+                name : category
+            }
+        })
+        if(!categoryData) {
+            return {
+                notFound : true
+            }
         }
-    })
-    if(!categoryData) {
-        await prisma.$disconnect()
+        const products = await prisma.product.findMany({
+            where : {
+                categoryId : categoryData?.id
+            },
+            include : {
+                category : true
+            }
+        })
         return {
-            notFound : true
-        }
+          props: {
+            products : JSON.parse(JSON.stringify(products))
+          },
+        };
+    } finally {
+        await prisma.$disconnect()
     }
-    const products = await prisma.product.findMany({
-        where : {
-            categoryId : categoryData?.id
-        },
-        include : {
-            category : true
-        }
-    })
-    await prisma.$disconnect()
-    return {
-      props: {
-        products : JSON.parse(JSON.stringify(products))
-      },
-    };
-}
-
-export async function getStaticPaths() {
-    const prisma = new PrismaClient()
-    const categories = await prisma.category.findMany()
-    const paths = categories.map((category) => ({
-      params: { category: category.name },
-    }))
-    await prisma.$disconnect()
-    return { paths, fallback: 'blocking' }
 }
