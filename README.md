@@ -1,40 +1,166 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TechBazaar
+
+TechBazaar is a full-stack e-commerce storefront built with Next.js, Prisma, PostgreSQL, Tailwind CSS, and Flowbite. It includes customer-facing shopping flows, JWT-based authentication, wishlist and cart management, checkout with saved addresses, product reviews, and an admin dashboard for managing categories and products.
+
+## Features
+
+- Browse featured, best-seller, and discounted products from the home page
+- Explore products by category
+- Sign up and log in with hashed passwords
+- Maintain a cart and wishlist
+- Add delivery addresses and place orders
+- Leave ratings and reviews on products
+- Admin-only category and product management
+- Cloudinary image upload support for categories and products
+
+## Tech Stack
+
+- Next.js 14
+- React 18
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- Tailwind CSS
+- Flowbite / Flowbite React
+- Framer Motion
+- JWT authentication
+- Cloudinary
+
+## Project Structure
+
+```text
+.
+|-- prisma/                 # Prisma schema and migrations
+|-- public/                 # Static assets
+|-- src/
+|   |-- components/         # UI building blocks
+|   |-- context/            # App, user, cart, and wishlist state
+|   |-- helpers/            # Auth, DB, Cloudinary, and utility helpers
+|   |-- pages/              # Pages and API routes
+|   `-- styles/             # Global and shared styles
+|-- package.json
+`-- README.md
+```
+
+## Environment Variables
+
+Create a `.env` file in the project root with these values:
+
+```env
+DATABASE_URL=postgresql://USERNAME:PASSWORD@localhost:5432/TechBazaar_DB
+JWT_SECRET=your-long-random-secret
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up PostgreSQL
+
+Create a PostgreSQL database, then update `DATABASE_URL` in `.env`.
+
+### 3. Run Prisma migrations
+
+```bash
+npx prisma migrate dev
+```
+
+This will create the database tables defined in `prisma/schema.prisma`.
+
+### 4. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+- `npm run dev` starts the local development server
+- `npm run build` generates the Prisma client and builds the Next.js app
+- `npm run start` starts the production server
+- `npm run lint` runs ESLint
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Authentication And Roles
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- New users are created through the signup flow and default to the `USER` role.
+- Admin routes such as `/admin`, `/admin/add-product`, and `/admin/category/add-category` require a logged-in user with the `ADMIN` role in the database.
+- To create an admin account for local development, sign up normally and then update that user's `role` field in PostgreSQL to `ADMIN`.
 
-## Learn More
+## Core App Routes
 
-To learn more about Next.js, take a look at the following resources:
+### Storefront
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/` home page
+- `/login` login page
+- `/signup` registration page
+- `/cart` shopping cart
+- `/wishlist` wishlist
+- `/checkout` checkout flow
+- `/:category` category listing
+- `/:category/:product` product details
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Admin
 
-## Deploy on Vercel
+- `/admin` admin dashboard
+- `/admin/add-product` add a new product
+- `/admin/category/add-category` add a new category
+- `/admin/category/[name]` manage a category
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Auth
+
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+
+### Catalog
+
+- `POST /api/category`
+- `PUT /api/category`
+- `DELETE /api/category?id=...`
+- `POST /api/product`
+- `GET /api/product/name/[name]`
+- `PATCH /api/product/[productid]`
+- `DELETE /api/product/[productid]`
+- `GET /api/product/[productid]/review`
+- `POST /api/product/[productid]/review`
+
+### User Data
+
+- `GET/POST /api/cart`
+- `DELETE /api/cart/[cartitem]`
+- `GET/POST /api/wishlist`
+- `DELETE /api/wishlist/[wishlistitem]`
+- `GET/POST/PUT/DELETE /api/user/address`
+- `POST /api/order`
+
+## Notes
+
+- Product and category image uploads use Cloudinary.
+- The current admin forms only accept PNG image uploads.
+- Prisma client generation runs automatically on `npm install` through `postinstall`.
+- There is no dedicated test suite configured in this repository yet.
+
+## Production Build
+
+```bash
+npm run build
+npm run start
+```
+
+## Future Improvements
+
+- Add seed data for categories, products, and an initial admin user
+- Add automated tests for API routes and critical user flows
+- Replace custom JWT auth with a more centralized auth/session strategy
+- Add payment gateway integration for checkout
